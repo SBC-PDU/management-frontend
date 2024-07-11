@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as child_process from 'child_process';
+import child_process from 'node:child_process';
+import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
-import path from 'path';
 
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
@@ -55,7 +55,9 @@ export default defineConfig(({ mode }) => {
 			}),
 			svgLoader({ defaultImport: 'url' }),
 			(env.VITE_SENTRY_ENABLED || process.env.SENTRY_ENABLED) === 'true' && sentryVitePlugin({
-				release: gitCommitHash,
+				release: {
+					name: gitCommitHash,
+				},
 				url: env.VITE_SENTRY_URL || process.env.SENTRY_URL,
 				org: env.VITE_SENTRY_ORG || process.env.SENTRY_ORG,
 				project: env.VITE_SENTRY_PROJECT || process.env.SENTRY_PROJECT,
@@ -64,6 +66,14 @@ export default defineConfig(({ mode }) => {
 		],
 		define: {
 			__GIT_COMMIT_HASH__: JSON.stringify(gitCommitHash),
+		},
+		optimizeDeps: {
+			entries: [
+				'src/components/**/*.vue',
+				'src/layouts/**/*.vue',
+				'src/pages/**/*.vue',
+			],
+			exclude: ['vuetify'],
 		},
 		resolve: {
 			alias: {
@@ -80,7 +90,7 @@ export default defineConfig(({ mode }) => {
 			],
 		},
 		server: {
-			port: 3000,
+			port: 3_000,
 		},
 	};
 });

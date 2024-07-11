@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import pinia from '@/store';
 
 /**
  * Registers application plugins
- * @param app Vue.js application instance
+ * @param {App} app Vue.js application instance
  */
 export function registerPlugins(app: App): void {
 	app

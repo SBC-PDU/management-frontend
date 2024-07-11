@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -55,16 +55,15 @@ const userStore = useUserStore();
 /**
  * Resend verification email
  */
-function resendVerificationEmail(): void {
+async function resendVerificationEmail(): Promise<void> {
 	loadingSpinner.show();
-	accountService.resendVerificationEmail()
-		.then(() => {
-			loadingSpinner.hide();
-			toast.success(i18n.t('core.user.verification.resend.messages.success').toString());
-		})
-		.catch(() => {
-			loadingSpinner.hide();
-			toast.error(i18n.t('core.user.verification.resend.messages.error').toString());
-		});
+	try {
+		await accountService.resendVerificationEmail();
+		toast.success(i18n.t('core.user.verification.resend.messages.success').toString());
+	} catch {
+		toast.error(i18n.t('core.user.verification.resend.messages.error').toString());
+	} finally {
+		loadingSpinner.hide();
+	}
 }
 </script>

@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,13 +44,22 @@ limitations under the License.
 			</v-btn>
 		</v-toolbar-items>
 	</v-toolbar>
-	<Card header-color='grey'>
+	<Card
+		v-if='loaded'
+		header-color='grey'
+	>
 		<v-chart
-			v-if='loaded'
+			v-if='hasData'
 			:autoresize='true'
 			:option='options'
 			class='chart'
 		/>
+		<v-alert
+			v-else
+			type='error'
+		>
+			{{ $t('core.devices.detail.measurements.messages.noData') }}
+		</v-alert>
 	</Card>
 </template>
 
@@ -68,7 +77,7 @@ import {
 } from 'echarts/components';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { reactive, type Ref, ref, watchEffect } from 'vue';
+import { computed, reactive, type Ref, ref, watchEffect } from 'vue';
 import VChart from 'vue-echarts';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue3-toastify';
@@ -112,61 +121,65 @@ const data: Ref<DeviceOutputMeasurements[]> = ref<DeviceOutputMeasurements[]>([]
 const legend = ref<string[]>([]);
 const series = ref<SeriesOption[]>([]);
 const timeRange = ref<string>('1h');
-
+const hasData = computed((): boolean => {
+	if (data.value.length === 0) {
+		return false;
+	}
+	return data.value.filter((output: DeviceOutputMeasurements) => {
+		return output.measurements.current.filter((measurement: DeviceOutputMeasurement) => measurement.value !== null).length > 0
+			|| output.measurements.voltage.filter((measurement: DeviceOutputMeasurement) => measurement.value !== null).length > 0;
+	}).length > 0;
+});
 /**
  * Fetches the measurements
- * @param newTimeRange New time range
+ * @param {string} newTimeRange New time range
  */
 async function fetchData(newTimeRange: string): Promise<void> {
 	loadingSpinner.show();
 	if (timeRange.value !== newTimeRange) {
 		timeRange.value = newTimeRange;
 	}
-	await service.getMeasurements(props.device.id, timeRange.value)
-		.then((measurements: DeviceOutputMeasurements[]) => {
-			data.value = measurements;
-			loaded.value = true;
-			const newSeries: SeriesOption[] = [];
-			for (const index in data.value) {
-				const output: DeviceOutputMeasurements = data.value[index];
-				newSeries.push({
-					name: `#${output.index} - ${props.device.outputs[index].name}`,
-					type: 'line',
-					smooth: true,
-					symbol: 'none',
-					data: output.measurements.current.map((measurement: DeviceOutputMeasurement): [Date, number] => [measurement.time, measurement.value]),
-					connectNulls: false,
-					tooltip: {
-						valueFormatter: (value): string => (Number(value).toFixed(2).toString() + ' mA'),
-					},
-				});
-				newSeries.push({
-					name: `#${output.index} - ${props.device.outputs[index].name}`,
-					type: 'line',
-					smooth: true,
-					symbol: 'none',
-					data: output.measurements.voltage.map((measurement: DeviceOutputMeasurement): [Date, number] => [measurement.time, measurement.value]),
-					connectNulls: false,
-					yAxisIndex: 1,
-					xAxisIndex: 1,
-					tooltip: {
-						valueFormatter: (value): string => (Number(value).toFixed(2).toString() + ' V'),
-					},
-				});
-			}
-			legend.value = Object.values(props.device.outputs).map((output: DeviceOutputWithMeasurements) => (`#${output.index} - ${output.name}`));
-			series.value = newSeries;
-			loadingSpinner.hide();
-		})
-		.catch(() => {
-			toast.error(i18n.t('core.devices.detail.measurements.messages.error').toString());
-			loadingSpinner.hide();
-		});
+	try {
+		data.value = await service.getMeasurements(props.device.id, timeRange.value);
+		loaded.value = true;
+		const newSeries: SeriesOption[] = [];
+		for (const index in data.value) {
+			const output: DeviceOutputMeasurements = data.value[index];
+			newSeries.push({
+				name: `#${output.index} - ${props.device.outputs[index].name}`,
+				type: 'line',
+				smooth: true,
+				symbol: 'none',
+				data: output.measurements.current.map((measurement: DeviceOutputMeasurement): [Date, number] => [measurement.time, measurement.value!]),
+				connectNulls: false,
+				tooltip: {
+					valueFormatter: (value): string => Number(value).toFixed(2).toString() + ' mA',
+				},
+			});
+			newSeries.push({
+				name: `#${output.index} - ${props.device.outputs[index].name}`,
+				type: 'line',
+				smooth: true,
+				symbol: 'none',
+				data: output.measurements.voltage.map((measurement: DeviceOutputMeasurement): [Date, number] => [measurement.time, measurement.value!]),
+				connectNulls: false,
+				yAxisIndex: 1,
+				xAxisIndex: 1,
+				tooltip: {
+					valueFormatter: (value): string => Number(value).toFixed(2).toString() + ' V',
+				},
+			});
+		}
+		legend.value = Object.values(props.device.outputs).map((output: DeviceOutputWithMeasurements) => `#${output.index} - ${output.name}`);
+		series.value = newSeries;
+		loadingSpinner.hide();
+	} catch {
+		toast.error(i18n.t('core.devices.detail.measurements.messages.error'));
+		loadingSpinner.hide();
+	}
 }
 
-watchEffect(async () => {
-	await fetchData(timeRange.value);
-});
+watchEffect(async () => await fetchData(timeRange.value));
 
 /**
  * Chart options
@@ -178,12 +191,12 @@ const options: EChartsOption = reactive({
 	title: [
 		{
 			left: 'center',
-			text: i18n.t('core.devices.detail.measurements.current').toString(),
+			text: i18n.t('core.devices.detail.measurements.current'),
 		},
 		{
 			top: '55%',
 			left: 'center',
-			text: i18n.t('core.devices.detail.measurements.voltage').toString(),
+			text: i18n.t('core.devices.detail.measurements.voltage'),
 		},
 	],
 	legend: {
@@ -269,7 +282,7 @@ const options: EChartsOption = reactive({
 
 </script>
 
-<style>
+<style scoped>
 .chart {
 	height: 800px;
 }

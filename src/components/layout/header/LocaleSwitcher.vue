@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -46,14 +46,15 @@ limitations under the License.
 import { mdiChevronDown } from '@mdi/js';
 
 import { useLocaleStore } from '@/store/locale';
+import { UserLanguage } from '@/types/user';
 
 const store = useLocaleStore();
 
 /**
  * Set the language
- * @param locale The locale to set
+ * @param {UserLanguage} locale The locale to set
  */
-function setLanguage(locale: string) {
+function setLanguage(locale: UserLanguage) {
 	store.setLocale(locale);
 }
 </script>

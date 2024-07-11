@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,10 +22,7 @@ limitations under the License.
 		<template #title>
 			{{ $t('core.openApi.title') }}
 		</template>
-		<div
-			id='swagger'
-			class='swagger'
-		/>
+		<div id='swagger' />
 	</Card>
 </template>
 
@@ -37,9 +34,11 @@ meta:
 
 <script lang='ts' setup>
 import { Head } from '@unhead/vue/components';
+import { OpenAPI3 } from 'openapi-typescript';
 import { storeToRefs } from 'pinia';
 import SwaggerUI from 'swagger-ui';
 import 'swagger-ui/dist/swagger-ui.css';
+import { onBeforeMount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue3-toastify';
 
@@ -54,11 +53,15 @@ const userStore = useUserStore();
 const { token } = storeToRefs(userStore);
 const service = new OpenApiService();
 
-loadingSpinner.show();
-service.getSpecification()
-	.then((spec) => {
+/**
+ * Fetches the OpenAPI specification from the server and renders it
+ */
+async function getSpecification(): Promise<void> {
+	loadingSpinner.show();
+	try {
+		const specification: OpenAPI3 = await service.getSpecification();
 		SwaggerUI({
-			spec: spec,
+			spec: specification,
 			dom_id: '#swagger',
 			requestInterceptor: (request: SwaggerUI.Request) => {
 				if (token.value && !request.headers.Authorization) {
@@ -68,9 +71,12 @@ service.getSpecification()
 			},
 		});
 		loadingSpinner.hide();
-	})
-	.catch(() => {
-		toast.error(i18n.t('core.openApi.messages.error').toString());
+	} catch {
+		toast.error(i18n.t('core.openApi.messages.error'));
+	} finally {
 		loadingSpinner.hide();
-	});
+	}
+}
+
+onBeforeMount(async () => await getSpecification());
 </script>

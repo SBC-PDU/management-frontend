@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ limitations under the License.
 					v-model='credentials.code'
 					:label='$t("core.user.totp.fields.code")'
 					:rules='[
-						(v: any) => FormValidator.isRequired(v, $t("core.user.totp.messages.emptyCode")),
+						(v: unknown) => FormValidator.isRequired(v, $t("core.user.totp.messages.emptyCode")),
 						(v: string) => FormValidator.isTotpCode(v, $t("core.user.totp.messages.invalidCode")),
 					]'
 				/>
@@ -71,16 +71,19 @@ limitations under the License.
 	</Card>
 </template>
 
-<route lang='yaml'>
-name: SignIn
-meta:
-  requiresAuth: false
+<route>
+{
+	"name": "SignIn",
+	"meta": {
+		"requiresAuth": false
+	}
+}
 </route>
 
 <script lang='ts' setup>
 import { mdiEmail, mdiKey, mdiLogin } from '@mdi/js';
 import { Head } from '@unhead/vue/components';
-import { type AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import { ref, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
@@ -89,7 +92,6 @@ import { VForm } from 'vuetify/components';
 
 import Card from '@/components/Card.vue';
 import PasswordField from '@/components/PasswordField.vue';
-import TotpField from '@/components/users/TotpField.vue';
 import FormValidator from '@/helpers/formValidator';
 import { useLoadingSpinnerStore } from '@/store/loadingSpinner';
 import { useUserStore } from '@/store/user';
@@ -116,7 +118,7 @@ const credentials: Ref<Credentials> = ref({
 	password: '',
 	code: '',
 });
-const form: Ref<typeof VForm | null> = ref(null);
+const form: Ref<VForm | null> = ref(null);
 const state: Ref<SignInState> = ref(SignInState.Initial);
 
 /**
@@ -131,18 +133,18 @@ async function onSubmit(): Promise<void> {
 		return;
 	}
 	loadingSpinner.show();
-	await userStore.signIn(credentials.value)
-		.then(() => {
-			let destination = (route?.query?.redirect as string | undefined) ?? '/';
-			if (destination.startsWith('/auth/sign/in')) {
-				destination = '/';
-			}
-			router.push(destination);
-			loadingSpinner.hide();
-			toast.success(i18n.t('core.sign.in.messages.success').toString());
-		})
-		.catch((error: AxiosError) => {
-			loadingSpinner.hide();
+	try {
+		await userStore.signIn(credentials.value);
+		let destination = (route?.query?.redirect as string | undefined) ?? '/';
+		if (destination.startsWith('/auth/sign/in')) {
+			destination = '/';
+		}
+		await router.push(destination);
+		loadingSpinner.hide();
+		toast.success(i18n.t('core.sign.in.messages.success').toString());
+	} catch (error) {
+		loadingSpinner.hide();
+		if (error instanceof AxiosError) {
 			if (error.response?.status === 400) {
 				const message: ErrorMessage = error.response.data as ErrorMessage;
 				if (message.message === 'Invalid credentials') {
@@ -163,7 +165,8 @@ async function onSubmit(): Promise<void> {
 				return;
 			}
 			toast.error(i18n.t('core.sign.in.messages.error').toString());
-		});
+		}
+	}
 }
 
 </script>

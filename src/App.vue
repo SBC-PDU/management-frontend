@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ const localeStore = useLocaleStore();
 const { locale } = storeToRefs(localeStore);
 const i18n = useI18n();
 
-const siteName: Ref<string> = ref(i18n.t('core.title').toString());
+const siteName: Ref<string> = ref(i18n.t('core.title'));
 const headOptions = ref({
 	titleTemplate: '%s %separator %siteName',
 	templateParams: {
@@ -46,7 +46,7 @@ const headOptions = ref({
 
 /**
  * Sets locale
- * @param newLocale New locale
+ * @param {string | null} newLocale New locale
  */
 function setLocale(newLocale: string | null = null): void {
 	const localeToSet = newLocale ?? locale.value;

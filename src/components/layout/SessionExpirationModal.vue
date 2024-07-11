@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ setInterval(() => {
 		return;
 	}
 	const now = new Date();
-	const epoch = Math.round(now.getTime() / 1000);
+	const epoch = Math.round(now.getTime() / 1_000);
 	const seconds = expiration.value - epoch;
 	isExpiring.value = seconds < 60;
 	if (isExpiring.value !== lastValue.value) {

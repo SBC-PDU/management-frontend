@@ -206,6 +206,7 @@
 				"measurements": {
 					"current": "Current",
 					"messages": {
+						"noData": "No measurements available for specific time range.",
 						"error": "Measurements could not be fetched."
 					},
 					"reload": "Reload",

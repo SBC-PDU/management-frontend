@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ export const useUserStore = defineStore('user', {
 	actions: {
 		/**
 		 * Sets user info from sign in response
-		 * @param response Sign in response
+		 * @param {SignedInUser} response Sign in response
 		 */
 		setUserInfo(response: SignedInUser): void {
 			console.warn(response);
@@ -66,30 +66,29 @@ export const useUserStore = defineStore('user', {
 		},
 		/**
 		 * Sign in
-		 * @param credentials User credentials
-		 * @return Empty promise
+		 * @param {Credentials} credentials User credentials
 		 */
-		signIn(credentials: Credentials): Promise<void> {
+		async signIn(credentials: Credentials): Promise<void> {
 			const service: AuthenticationService = new AuthenticationService();
-			return service.signIn(credentials)
-				.then((response: SignedInUser): void => this.setUserInfo(response));
+			const response: SignedInUser = await service.signIn(credentials);
+			this.setUserInfo(response);
 		},
 		/**
 		 * Sign out
 		 */
-		signOut(): void {
+		async signOut(): Promise<void> {
 			this.expiration = 0;
 			this.token = null;
 			this.user = null;
 			Sentry.setUser(null);
-			router.push('/auth/sign/in');
+			await router.push('/auth/sign/in');
 		},
 	},
 	getters: {
 		/**
 		 * Checks if user is logged in
-		 * @param state User state
-		 * @return True if user is logged in
+		 * @param {UserState} state User state
+		 * @return {boolean} True if user is logged in
 		 */
 		isLoggedIn(state: UserState): boolean {
 			if (state.user === null) {
@@ -100,8 +99,8 @@ export const useUserStore = defineStore('user', {
 		},
 		/**
 		 * Returns user ID
-		 * @param state User state
-		 * @return User ID
+		 * @param {UserState} state User state
+		 * @return {number | null} User ID
 		 */
 		getId(state: UserState): number | null {
 			if (state.user === null || !this.isLoggedIn) {
@@ -111,8 +110,8 @@ export const useUserStore = defineStore('user', {
 		},
 		/**
 		 * Returns user Gravatar avatar URL
-		 * @param state User state
-		 * @return Gravatar avatar URL
+		 * @param {UserState} state User state
+		 * @return {string | null} Gravatar avatar URL
 		 */
 		getGravatarUrl(state: UserState): string | null {
 			if (state.user === null || !this.isLoggedIn) {
@@ -123,8 +122,8 @@ export const useUserStore = defineStore('user', {
 		},
 		/**
 		 * Returns user email
-		 * @param state User state
-		 * @return User email
+		 * @param {UserState} state User state
+		 * @return {string | null} User email
 		 */
 		getEmail(state: UserState): string | null {
 			if (state.user === null || !this.isLoggedIn) {
@@ -134,8 +133,8 @@ export const useUserStore = defineStore('user', {
 		},
 		/**
 		 * Returns user token expiration timestamp
-		 * @param state User state
-		 * @return Token expiration timestamp
+		 * @param {UserState} state User state
+		 * @return {number | null} Token expiration timestamp
 		 */
 		getExpiration(state: UserState): number | null {
 			if (state.user === null || !this.isLoggedIn) {
@@ -145,8 +144,8 @@ export const useUserStore = defineStore('user', {
 		},
 		/**
 		 * Returns user name
-		 * @param state User state
-		 * @return User name
+		 * @param {UserState} state User state
+		 * @return {string | null} User name
 		 */
 		getName(state: UserState): string | null {
 			if (state.user === null || !this.isLoggedIn) {
@@ -156,8 +155,8 @@ export const useUserStore = defineStore('user', {
 		},
 		/**
 		 * Returns user role
-		 * @param state User state
-		 * @return User role
+		 * @param {UserState} state User state
+		 * @return {UserRole | null} User role
 		 */
 		getRole(state: UserState): UserRole | null {
 			if (state.user === null || !this.isLoggedIn) {
@@ -167,8 +166,8 @@ export const useUserStore = defineStore('user', {
 		},
 		/**
 		 * Returns account state
-		 * @param state User state
-		 * @return Account state
+		 * @param {UserState} state User state
+		 * @return {AccountState | null} Account state
 		 */
 		getState(state: UserState): AccountState | null {
 			if (state.user === null || !this.isLoggedIn) {
@@ -178,8 +177,8 @@ export const useUserStore = defineStore('user', {
 		},
 		/**
 		 * Returns JWT token
-		 * @param state User state
-		 * @return JWT token
+		 * @param {UserState} state User state
+		 * @return {string | null} JWT token
 		 */
 		getToken(state: UserState): string | null {
 			if (!this.isLoggedIn) {

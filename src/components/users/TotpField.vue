@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ limitations under the License.
 		v-bind='$attrs'
 		:label='$t("core.user.totp.fields.code")'
 		:rules='[
-			(v: any) => FormValidator.isRequired(v, $t("core.user.totp.messages.emptyCode")),
+			(v: unknown) => FormValidator.isRequired(v, $t("core.user.totp.messages.emptyCode")),
 			(v: string) => FormValidator.isTotpCode(v, $t("core.user.totp.messages.invalidCode")),
 		]'
 		required
@@ -42,6 +42,5 @@ interface Props {
   modelValue: string | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const props = defineProps<Props>();
+defineProps<Props>();
 </script>

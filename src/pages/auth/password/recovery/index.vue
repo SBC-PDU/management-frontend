@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ limitations under the License.
 				v-model='recovery.email'
 				:label='$t("core.user.fields.email")'
 				:rules='[
-					v => FormValidator.isRequired(v, $t("core.user.messages.emptyEmail")),
-					v => FormValidator.isEmail(v, $t("core.user.messages.invalidEmail")),
+					(v: unknown) => FormValidator.isRequired(v, $t("core.user.messages.emptyEmail")),
+					(v: string) => FormValidator.isEmail(v, $t("core.user.messages.invalidEmail")),
 				]'
 				required
 				:prepend-inner-icon='mdiEmail'
@@ -49,10 +49,13 @@ limitations under the License.
 	</Card>
 </template>
 
-<route lang='yaml'>
-name: PasswordRecovery
-meta:
-  requiresAuth: false
+<route>
+{
+	"name": "PasswordRecovery",
+	"meta": {
+		"requiresAuth": false
+	}
+}
 </route>
 
 <script lang='ts' setup>
@@ -77,7 +80,7 @@ const service = new AuthenticationService();
 const recovery: Ref<PasswordRecovery> = ref({
 	email: '',
 });
-const form: Ref<typeof VForm | null> = ref(null);
+const form: Ref<VForm | null> = ref(null);
 
 /**
  * Submit the form
@@ -91,15 +94,14 @@ async function submit(): Promise<void> {
 		return;
 	}
 	loadingSpinner.show();
-	await service.passwordRecovery(recovery.value)
-		.then(() => {
-			loadingSpinner.hide();
-			toast.success(i18n.t('core.password.recovery.messages.success'));
-			router.push({ name: 'SignIn' });
-		})
-		.catch(() => {
-			loadingSpinner.hide();
-			toast.error(i18n.t('core.password.recovery.messages.error'));
-		});
+	try {
+		await service.passwordRecovery(recovery.value);
+		loadingSpinner.hide();
+		toast.success(i18n.t('core.password.recovery.messages.success'));
+		await router.push({ name: 'SignIn' });
+	} catch {
+		loadingSpinner.hide();
+		toast.error(i18n.t('core.password.recovery.messages.error'));
+	}
 }
 </script>

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { type App } from 'vue';
-// @ts-ignore
 import matomo from 'vue-matomo';
 import { type Router } from 'vue-router';
 
 /**
  * Registers Matomo integration
- * @param app Vue.js app
- * @param router Router instance
+ * @param {App} app Vue.js app
+ * @param {Router} router Router instance
  */
 export default function registerMatomo(app: App, router: Router): void {
 	if (!import.meta.env.VITE_MATOMO_ENABLED) {

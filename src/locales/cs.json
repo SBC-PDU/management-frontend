@@ -206,6 +206,7 @@
 				"measurements": {
 					"current": "Elektrický proud",
 					"messages": {
+						"noData": "Pro zvolený časový úsek nebyly nalezeny žádné změřené veličiny.",
 						"error": "Nepodařilo se načíst měřené veličiny."
 					},
 					"reload": "Obnovit",

@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,13 +48,15 @@ limitations under the License.
 	/>
 </template>
 
-<route lang='yaml'>
-name: DeviceDetail
+<route>
+{
+	"name": "DeviceDetail"
+}
 </route>
 
 <script lang='ts' setup>
 import { Head } from '@unhead/vue/components';
-import { type AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import { type Ref, ref, toRaw, watchEffect } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue3-toastify';
@@ -84,32 +86,31 @@ const state: Ref<PageState> = ref<PageState>(PageState.Loading);
 
 /**
  * Fetch information about device
- * @param showSpinner Show loading spinner
+ * @param {boolean} showSpinner Show loading spinner
  */
-function fetchData(showSpinner = true): void {
+async function fetchData(showSpinner: boolean = true): Promise<void> {
 	state.value = PageState.Loading;
 	if (showSpinner) {
 		loadingSpinner.show();
 	}
-	service.get(props.id)
-		.then((response: DeviceDetail) => {
-			state.value = PageState.Loaded;
-			device.value = response;
-			loadingSpinner.hide();
-		})
-		.catch((error: AxiosError) => {
-			loadingSpinner.hide();
+	try {
+		device.value = await service.get(props.id);
+		state.value = PageState.Loaded;
+	} catch (error) {
+		if (error instanceof AxiosError) {
 			if (error.response?.status === 404) {
 				state.value = PageState.NotFound;
 			} else {
 				toast.error(i18n.t('core.devices.detail.messages.fetchFailed').toString());
 				state.value = PageState.LoadFailed;
 			}
-		});
+		}
+	} finally {
+		if (showSpinner) {
+			loadingSpinner.hide();
+		}
+	}
 }
 
-watchEffect(async () => {
-	fetchData();
-});
-
+watchEffect(async () => await fetchData());
 </script>

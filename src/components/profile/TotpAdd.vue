@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ limitations under the License.
 							v-model='formData.name'
 							:label='$t("core.user.totp.fields.name")'
 							:rules='[
-								(v: any) => FormValidator.isRequired(v, $t("core.user.totp.messages.emptyName")),
+								(v: unknown) => FormValidator.isRequired(v, $t("core.user.totp.messages.emptyName")),
 							]'
 							required
 							:counter='255'
@@ -113,7 +113,7 @@ limitations under the License.
 							v-model='formData.password'
 							:label='$t("core.user.fields.password")'
 							:rules='[
-								(v: any) => FormValidator.isRequired(v, $t("core.user.messages.emptyPassword")),
+								(v: unknown) => FormValidator.isRequired(v, $t("core.user.messages.emptyPassword")),
 							]'
 							required
 							:prepend-inner-icon='mdiKey'
@@ -145,7 +145,7 @@ limitations under the License.
 import { mdiContentCopy, mdiKey, mdiPlus, mdiTextShort, mdiTwoFactorAuthentication } from '@mdi/js';
 import * as OTPAuth from 'otpauth';
 import QrcodeVue from 'qrcode.vue';
-import { Clipboard } from 'v-clipboard';
+import Clipboard from 'v-clipboard';
 import { computed, type Ref, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue3-toastify';
@@ -188,7 +188,7 @@ const defaultFormData: UserTotpAdd = {
 	code: '',
 	password: '',
 };
-const form: Ref<typeof VForm | null> = ref(null);
+const form: Ref<VForm | null> = ref(null);
 const formData = ref<UserTotpAdd>(defaultFormData);
 
 /// QR code size
@@ -249,7 +249,7 @@ async function copySecret(): Promise<void> {
 	try {
 		await Clipboard.copy(secret.value.base32);
 		toast.success(i18n.t('core.user.totp.secret.copy.success').toString());
-	} catch (e) {
+	} catch {
 		toast.error(i18n.t('core.user.totp.secret.copy.error').toString());
 	}
 }

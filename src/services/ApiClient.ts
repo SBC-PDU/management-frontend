@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,31 +55,31 @@ export class ApiClient {
 		});
 		// Register response interceptor for handling HTTP errors
 		this.client.interceptors.response.use(
-			(response: AxiosResponse): AxiosResponse => (response),
-			(error: AxiosError) => {
+			(response: AxiosResponse): AxiosResponse => response,
+			async (error: AxiosError) => {
 				console.error(error);
 				// Handle network error
 				if (error.response === undefined) {
-					return Promise.reject(error);
+					throw error;
 				}
 				// Handle HTTP Error 401 Unauthorized response
 				if (error.response.status === 401) {
 					const userStore = useUserStore();
-					userStore.signOut();
+					await userStore.signOut();
 					// Prevent duplicate redirect to sign in page
 					if (router.currentRoute.value.name !== 'SignIn') {
-						router.push({ name: 'SignIn', query: { redirect: router.currentRoute.value.path } });
+						await router.push({ name: 'SignIn', query: { redirect: router.currentRoute.value.path } });
 					}
 				}
 				// Handle other HTTP errors
-				return Promise.reject(error);
+				throw error;
 			},
 		);
 	}
 
 	/**
 	 * Returns Axios instance
-	 * @return Axios instance
+	 * @return {AxiosInstance} Axios instance
 	 */
 	public getClient(): AxiosInstance {
 		return this.client;

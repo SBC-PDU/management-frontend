@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import 'vue3-toastify/dist/index.css';
-import Vue3Toastify, { type ToastContainerOptions } from 'vue3-toastify';
+import { type ToastContainerOptions } from 'vue3-toastify';
 
 export const ToastifyOptions: ToastContainerOptions = {
-	autoClose: 5000,
+	autoClose: 5_000,
 	position: 'top-right',
 	theme: 'colored',
 	pauseOnFocusLoss: true,
@@ -27,4 +27,4 @@ export const ToastifyOptions: ToastContainerOptions = {
 	newestOnTop: true,
 };
 
-export default Vue3Toastify;
+export { default } from 'vue3-toastify';

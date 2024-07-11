@@ -24,7 +24,7 @@ Tento repozitář obsahuje frontendovou část pro centrální správu napájec�
 	 ```
 3. Vytvořte soubor `.env.local` s konfigurací:
 	```dotenv
-	# Copyright 2022-2023 Roman Ondráček
+	# Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 	#
 	# Licensed under the Apache License, Version 2.0 (the "License");
 	# you may not use this file except in compliance with the License.

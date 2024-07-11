@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,8 @@ export const useLoadingSpinnerStore = defineStore('loadingSpinner', {
 	actions: {
 		/**
 		 * Show loading spinner
-		 * @param text Loading spinner text
-		 * @param timeout Loading spinner timeout
+		 * @param {string|null} text Loading spinner text
+		 * @param {number | null} timeout Loading spinner timeout
 		 */
 		show(text: string|null = null, timeout: number|null = null): void {
 			this.enabled = true;
@@ -52,7 +52,7 @@ export const useLoadingSpinnerStore = defineStore('loadingSpinner', {
 		/**
 		 * Hide loading spinner
 		 */
-		hide() {
+		hide(): void {
 			this.enabled = false;
 			this.text = null;
 			if (this.timeout !== null) {
@@ -62,7 +62,7 @@ export const useLoadingSpinnerStore = defineStore('loadingSpinner', {
 		},
 		/**
 		 * Update loading spinner text
-		 * @param text New loading spinner text
+		 * @param {string | null} text New loading spinner text
 		 */
 		updateText(text: string|null): void {
 			this.text = text;
@@ -71,14 +71,14 @@ export const useLoadingSpinnerStore = defineStore('loadingSpinner', {
 	getters: {
 		/**
 		 * Check if loading spinner is enabled
-		 * @return Loading spinner enablement
+		 * @return {boolean} Loading spinner enablement
 		 */
 		isEnabled(): boolean {
 			return this.enabled;
 		},
 		/**
 		 * Returns loading spinner text
-		 * @return Loading spinner text
+		 * @return {string | null} Loading spinner text
 		 */
 		getText(): string|null {
 			return this.text;

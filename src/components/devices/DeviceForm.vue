@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -63,27 +63,27 @@ limitations under the License.
 			@submit.prevent='submit'
 		>
 			<Card
-				:header-color='action === "add" ? "green-darken-1" : "primary"'
+				:header-color='action === Action.Add ? "green-darken-1" : "primary"'
 				style='max-height: 90vh'
 			>
 				<template #title>
-					{{ action === "add" ? $t('core.devices.add.title') : $t('core.devices.edit.title') }}
+					{{ action === Action.Add ? $t('core.devices.add.title') : $t('core.devices.edit.title') }}
 				</template>
 				<v-text-field
 					v-model='device.name'
 					:label='$t("core.devices.fields.name")'
 					:rules='[
-						v => FormValidator.isRequired(v, $t("core.devices.form.messages.emptyName")),
+						(v: unknown) => FormValidator.isRequired(v, $t("core.devices.form.messages.emptyName")),
 					]'
 					required
 					:prepend-inner-icon='mdiTextShort'
 				/>
 				<v-text-field
-					v-if='action === "add"'
-					v-model='device.macAddress'
+					v-if='action === Action.Add'
+					v-model='(device as DeviceAdd).macAddress'
 					:label='$t("core.devices.fields.macAddress")'
 					:rules='[
-						v => FormValidator.isRequired(v, $t("core.devices.form.messages.emptyMacAddress")),
+						(v: unknown) => FormValidator.isRequired(v, $t("core.devices.form.messages.emptyMacAddress")),
 					]'
 					required
 					:prepend-inner-icon='mdiWifi'
@@ -103,7 +103,7 @@ limitations under the License.
 							v-model.number='output.index'
 							:label='$t("core.devices.fields.outputs.index")'
 							:rules='[
-								v => FormValidator.isRequired(v, $t("core.devices.form.messages.outputs.emptyIndex")),
+								(v: unknown) => FormValidator.isRequired(v, $t("core.devices.form.messages.outputs.emptyIndex")),
 							]'
 							required
 							type='number'
@@ -118,7 +118,7 @@ limitations under the License.
 							v-model='output.name'
 							:label='$t("core.devices.fields.outputs.name")'
 							:rules='[
-								v => FormValidator.isRequired(v, $t("core.devices.form.messages.outputs.emptyName")),
+								(v: unknown) => FormValidator.isRequired(v, $t("core.devices.form.messages.outputs.emptyName")),
 							]'
 							required
 							:prepend-inner-icon='mdiTextShort'
@@ -176,7 +176,7 @@ limitations under the License.
 				/>
 				<template #actions>
 					<v-btn
-						v-if='action === "add"'
+						v-if='action === Action.Add'
 						color='success'
 						variant='text'
 						type='submit'
@@ -212,8 +212,8 @@ limitations under the License.
 
 <script lang='ts' setup>
 import { mdiIdentifier, mdiMinus, mdiPencil, mdiPencilOutline, mdiPlus, mdiTextShort, mdiWifi } from '@mdi/js';
-import { type AxiosError } from 'axios';
-import { type Ref, ref, watchEffect } from 'vue';
+import { AxiosError } from 'axios';
+import { PropType, type Ref, ref, watchEffect } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue3-toastify';
 import { useDisplay } from 'vuetify';
@@ -242,23 +242,27 @@ enum Action {
 	EditFromTable = 'editTable',
 }
 
-interface Props {
-	/// Action to perform
-	action: Action;
-	/// Device ID to edit
-	id?: string;
-}
-
 const display = useDisplay();
 const i18n = useI18n();
 const loadingSpinner = useLoadingSpinnerStore();
 const service = new DeviceService();
 
 const emit = defineEmits(['save']);
-const componentProps = defineProps<Props>();
+const componentProps = defineProps({
+	action: {
+		type: String as PropType<Action | 'add' | 'edit' | 'editTable'>,
+		required: true,
+		validator: (value: Action | string) => ['add', 'edit', 'editTable'].includes(value.toString()),
+	},
+	id: {
+		type: String,
+		required: false,
+		default: undefined,
+	},
+});
 const dialog = ref(false);
 const modalWidth = ModalWindowHelper.getWidth();
-const form: Ref<typeof VForm | null> = ref(null);
+const form: Ref<VForm | null> = ref(null);
 
 const device: Ref<DeviceAdd|DeviceModify> = ref({
 	name: '',
@@ -269,7 +273,7 @@ const state: Ref<PageState> = ref<PageState>(PageState.Loading);
 /**
  * Loads data about the device
  */
-function loadData(): void {
+async function loadData(): Promise<void> {
 	if (componentProps.action === Action.Add || componentProps.id === undefined) {
 		device.value = {
 			name: '',
@@ -282,29 +286,28 @@ function loadData(): void {
 		return;
 	}
 	state.value = PageState.Loading;
-	service.get(componentProps.id)
-		.then((response: DeviceDetail) => {
-			device.value = {
-				name: response.name,
-				outputs: response.outputs.map((output: DeviceOutputWithMeasurements): DeviceOutput => ({
-					index: output.index,
-					name: output.name,
-				})),
-			};
-			state.value = PageState.Loaded;
-		})
-		.catch((error: AxiosError) => {
+	try {
+		const response: DeviceDetail = await service.get(componentProps.id);
+		device.value = {
+			name: response.name,
+			outputs: response.outputs.map((output: DeviceOutputWithMeasurements): DeviceOutput => ({
+				index: output.index,
+				name: output.name,
+			})),
+		};
+		state.value = PageState.Loaded;
+	} catch (error) {
+		if (error instanceof AxiosError) {
 			if (error.response?.status === 404) {
 				state.value = PageState.NotFound;
 			} else {
 				state.value = PageState.LoadFailed;
 			}
-		});
+		}
+	}
 }
 
-watchEffect(async () => {
-	loadData();
-});
+watchEffect(async () => await loadData());
 
 /**
  * Closes the dialog
@@ -322,7 +325,7 @@ function addOutput(): void {
 
 /**
  * Removes an output
- * @param index Index of the output to remove
+ * @param {number} index Index of the output to remove
  */
 function removeOutput(index: number): void {
 	device.value.outputs.splice(index, 1);
@@ -330,35 +333,35 @@ function removeOutput(index: number): void {
 
 /**
  * Adds a new device
- * @param data Device to add
+ * @param {DeviceAdd} data Device to add
  */
 async function add(data: DeviceAdd): Promise<void> {
-	await service.add(data)
-		.then(() => {
-			toast.success(i18n.t('core.devices.add.messages.success', { name: data.name }));
-		})
-		.catch(() => {
-			toast.error(i18n.t('core.devices.add.messages.error', { name: data.name }));
-		});
-	loadingSpinner.hide();
-	emit('save');
+	try {
+		await service.add(data);
+		toast.success(i18n.t('core.devices.add.messages.success', { name: data.name }));
+		loadingSpinner.hide();
+		emit('save');
+	} catch {
+		toast.error(i18n.t('core.devices.add.messages.error', { name: data.name }));
+		loadingSpinner.hide();
+	}
 }
 
 /**
  * Edits a device
- * @param id Device ID
- * @param data Device to edit
+ * @param {string} id Device ID
+ * @param {DeviceModify} data Device to edit
  */
 async function edit(id: string, data: DeviceModify): Promise<void> {
-	await service.edit(id, data)
-		.then(() => {
-			toast.success(i18n.t('core.devices.edit.messages.success', { name: data.name }));
-		})
-		.catch(() => {
-			toast.error(i18n.t('core.devices.edit.messages.error', { name: data.name }));
-		});
-	loadingSpinner.hide();
-	emit('save');
+	try {
+		await service.edit(id, data);
+		toast.success(i18n.t('core.devices.edit.messages.success', { name: data.name }));
+		loadingSpinner.hide();
+		emit('save');
+	} catch {
+		toast.error(i18n.t('core.devices.edit.messages.error', { name: data.name }));
+		loadingSpinner.hide();
+	}
 }
 
 /**

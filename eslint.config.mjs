@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,32 @@
  * limitations under the License.
  */
 
-/**
- * Locale helper
- */
-export default class LocaleHelper {
+import { iqrfEslint } from '@iqrf/eslint-config';
 
-	/**
-	 * Returns locale flag
-	 * @param locale Locale
-	 * @return Unicode flag
-	 */
-	public static getFlag(locale: string): string {
-		switch (locale) {
-			case 'cs':
-				return '🇨🇿';
-			case 'en':
-				return '🇬🇧';
-			default:
-				return '🏴‍☠️';
-		}
-	}
-
-}
+export default iqrfEslint({
+	ignores: [
+		'.pnpm-store/',
+		'coverage/',
+		'dev-dist/',
+		'dist/',
+		'docs/',
+	],
+}, {
+	rules: {
+		'jsonc/indent': [
+			'error',
+			'tab',
+			{},
+		],
+		'jsonc/key-spacing': [
+			'error',
+			{
+				'beforeColon': false,
+				'afterColon': true,
+				'mode': 'strict',
+			},
+		],
+		'jsonc/no-dupe-keys': 'error',
+		'jsonc/no-useless-escape': 'error',
+	},
+});

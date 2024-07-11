@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -74,14 +74,16 @@ limitations under the License.
 	</v-alert>
 </template>
 
-<route lang='yaml'>
-name: DeviceList
+<route>
+{
+	"name": "DeviceList",
+}
 </route>
 
 <script lang='ts' setup>
 import { mdiPower } from '@mdi/js';
 import { Head } from '@unhead/vue/components';
-import { type Ref, ref } from 'vue';
+import { onBeforeMount, type Ref, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import DeviceDeleteConfirmation from '@/components/devices/DeviceDeleteConfirmation.vue';
@@ -109,18 +111,15 @@ const state: Ref<PageState> = ref(PageState.Loading);
 /**
  * Load devices
  */
-function loadDevices() {
+async function loadDevices() {
 	state.value = PageState.Loading;
-	deviceService.list()
-		.then((response: Device[]) => {
-			state.value = PageState.Loaded;
-			devices.value = response;
-		})
-		.catch(() => {
-			state.value = PageState.LoadFailed;
-		});
+	try {
+		devices.value = await deviceService.list();
+		state.value = PageState.Loaded;
+	} catch {
+		state.value = PageState.LoadFailed;
+	}
 }
 
-loadDevices();
-
+onBeforeMount(async () => await loadDevices());
 </script>

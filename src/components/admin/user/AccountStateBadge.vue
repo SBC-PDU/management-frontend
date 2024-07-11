@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,13 +48,12 @@ interface Props {
 }
 
 const display = useDisplay();
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const componentProps = defineProps<Props>();
+defineProps<Props>();
 
 /**
  * Returns the color for the given state
- * @param state The state to get the color for
- * @return The color
+ * @param {AccountState} state The state to get the color for
+ * @return {string} The color
  */
 function getColor(state: AccountState): string {
 	switch (state) {
@@ -71,8 +70,8 @@ function getColor(state: AccountState): string {
 
 /**
  * Returns the icon for the given state
- * @param state The state to get the icon for
- * @return The icon
+ * @param {AccountState} state The state to get the icon for
+ * @return {string} The icon
  */
 function getIcon(state: AccountState): string {
 	switch (state) {

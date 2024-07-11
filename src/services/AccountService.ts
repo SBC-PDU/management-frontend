@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,62 +30,58 @@ export default class AccountService extends ApiClient {
 
 	/**
 	 * Returns information about logged-in user
-	 * @return Information about logged-in user
+	 * @return {Promise<UserInfo>} Information about logged-in user
 	 */
-	public get(): Promise<UserInfo> {
-		return this.getClient().get('account')
-			.then((response: AxiosResponse<UserInfo>): UserInfo => {
-				const user: UserInfo = response.data;
-				/// Convert email to unicode
-				user.email = punycode.toUnicode(user.email);
-				return user;
-			});
+	public async get(): Promise<UserInfo> {
+		const response: AxiosResponse<UserInfo> =
+			await this.getClient().get('/account');
+		const user: UserInfo = response.data;
+		/// Convert email to unicode
+		user.email = punycode.toUnicode(user.email);
+		return user;
 	}
 
 	/**
 	 * Edits user account
-	 * @param account Account data
-	 * @return User data with JWT token
+	 * @param {AccountModify} account Account data
+	 * @return {Promise<SignedInUser>} User data with JWT token
 	 */
-	public edit(account: AccountModify): Promise<SignedInUser> {
+	public async edit(account: AccountModify): Promise<SignedInUser> {
 		const body: AccountModify = account;
 		body.email = punycode.toASCII(account.email);
 		if (!account.changePassword) {
 			delete body.oldPassword;
 			delete body.newPassword;
 		}
-		return this.getClient().put('account', {
-			...body,
-			baseUrl: BaseUrlHelper.get(),
-		})
-			.then((response: AxiosResponse<SignedInUser>): SignedInUser => response.data);
+		const response: AxiosResponse<SignedInUser> =
+			await this.getClient().put('/account', {
+				...body,
+				baseUrl: BaseUrlHelper.get(),
+			});
+		return response.data;
 	}
 
 	/**
 	 * Lists user's TOTP tokens
-	 * @return List of TOTP tokens
+	 * @return {Promise<UserTotp[]>} List of TOTP tokens
 	 */
-	public listTotp(): Promise<UserTotp[]> {
-		return this.getClient().get('account/totp')
-			.then((response: AxiosResponse<Record<string, string>[]>): UserTotp[] => {
-				return response.data.map((item: Record<string, string>): UserTotp => {
-					return {
-						uuid: item.uuid,
-						name: item.name,
-						createdAt: new Date(item.createdAt),
-						lastUsedAt: item.lastUsedAt !== null ? new Date(item.lastUsedAt) : null,
-					};
-				});
-			});
+	public async listTotp(): Promise<UserTotp[]> {
+		const response: AxiosResponse<Record<string, string>[]> =
+			await this.getClient().get('/account/totp');
+		return response.data.map((item: Record<string, string>): UserTotp => ({
+			uuid: item.uuid,
+			name: item.name,
+			createdAt: new Date(item.createdAt),
+			lastUsedAt: item.lastUsedAt !== null ? new Date(item.lastUsedAt) : null,
+		}));
 	}
 
 	/**
 	 * Adds a new TOTP token
-	 * @param totp TOTP token data
-	 * @return Empty promise
+	 * @param {UserTotpAdd} totp TOTP token data
 	 */
-	public addTotp(totp: UserTotpAdd): Promise<void> {
-		return this.getClient().post('account/totp', {
+	public async addTotp(totp: UserTotpAdd): Promise<void> {
+		await this.getClient().post('/account/totp', {
 			...totp,
 			baseUrl: BaseUrlHelper.get(),
 		});
@@ -93,12 +89,11 @@ export default class AccountService extends ApiClient {
 
 	/**
 	 * Removes a TOTP token
-	 * @param uuid TOTP token UUID
-	 * @param totp TOTP token removal confirmation
-	 * @return Empty promise
+	 * @param {string} uuid TOTP token UUID
+	 * @param {UserTotpRemove} totp TOTP token removal confirmation
 	 */
-	public removeTotp(uuid: string, totp: UserTotpRemove): Promise<void> {
-		return this.getClient().delete(`account/totp/${uuid}`, {
+	public async removeTotp(uuid: string, totp: UserTotpRemove): Promise<void> {
+		await this.getClient().delete(`/account/totp/${uuid}`, {
 			data: {
 				...totp,
 				baseUrl: BaseUrlHelper.get(),
@@ -108,22 +103,22 @@ export default class AccountService extends ApiClient {
 
 	/**
 	 * Resends verification e-mail
-	 * @return Empty promise
 	 */
-	public resendVerificationEmail(): Promise<void> {
-		return this.getClient().post('account/verification/resend', {
+	public async resendVerificationEmail(): Promise<void> {
+		await this.getClient().post('/account/verification/resend', {
 			baseUrl: BaseUrlHelper.get(),
 		});
 	}
 
 	/**
 	 * Verifies user's e-mail
-	 * @param uuid Verification UUID
-	 * @return User data with JWT token
+	 * @param {string} uuid Verification UUID
+	 * @return {Promise<SignedInUser>} User data with JWT token
 	 */
-	public verify(uuid: string): Promise<SignedInUser> {
-		return this.getClient().post(`account/verification/${uuid}`)
-			.then((response: AxiosResponse<SignedInUser>): SignedInUser => response.data);
+	public async verify(uuid: string): Promise<SignedInUser> {
+		const response: AxiosResponse<SignedInUser> =
+			await this.getClient().post(`/account/verification/${uuid}`);
+		return response.data;
 	}
 
 }

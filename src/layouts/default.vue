@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -46,6 +46,9 @@ const route = useRoute();
 const userStore = useUserStore();
 
 const { getRole: role } = storeToRefs(userStore);
+const requiresAuth: Ref<boolean> = computed((): boolean => (route.meta.requiresAuth ?? true) as boolean);
 const requiredRoles: Ref<UserRole[]> = computed((): UserRole[] => (route.meta.requiredRoles ?? []) as UserRole[]);
-const isAllowed: Ref<boolean> = computed((): boolean => requiredRoles.value.length === 0 || role.value !== null && requiredRoles.value.includes(role.value));
-</script>
+const isAllowed: Ref<boolean> = computed((): boolean => {
+	return !requiresAuth.value || requiredRoles.value.length === 0 ||
+		(role.value !== null && requiredRoles.value.includes(role.value));
+});</script>

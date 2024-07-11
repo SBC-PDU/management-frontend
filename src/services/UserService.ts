@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,10 @@ export default class UserService extends ApiClient {
 
 	/**
 	 * Creates a new user
-	 * @param user User to create
-	 * @return Empty promise
+	 * @param {UserModify} user User to create
 	 */
-	public create(user: UserModify): Promise<void> {
-		return this.getClient().post('users', {
+	public async create(user: UserModify): Promise<void> {
+		await this.getClient().post('/users', {
 			...this.serializeUser(user),
 			baseUrl: BaseUrlHelper.get(),
 		});
@@ -39,21 +38,19 @@ export default class UserService extends ApiClient {
 
 	/**
 	 * Deletes a user
-	 * @param id User ID to delete
-	 * @return Empty promise
+	 * @param {number} id User ID to delete
 	 */
-	public delete(id: number): Promise<void> {
-		return this.getClient().delete(`users/${id}`);
+	public async delete(id: number): Promise<void> {
+		await this.getClient().delete(`/users/${id}`);
 	}
 
 	/**
 	 * Edits a user
-	 * @param id User ID to edit
-	 * @param user Modified user
-	 * @return Empty promise
+	 * @param {number} id User ID to edit
+	 * @param {UserModify} user Modified user
 	 */
-	public edit(id: number, user: UserModify): Promise<void> {
-		return this.getClient().put(`users/${id}`, {
+	public async edit(id: number, user: UserModify): Promise<void> {
+		await this.getClient().put(`/users/${id}`, {
 			...this.serializeUser(user),
 			baseUrl: BaseUrlHelper.get(),
 		});
@@ -61,52 +58,48 @@ export default class UserService extends ApiClient {
 
 	/**
 	 * Lists all users
-	 * @return List of users
+	 * @return {Promise<UserInfo[]>} List of users
 	 */
-	public list(): Promise<UserInfo[]> {
-		return this.getClient().get('users')
-			.then((response: AxiosResponse<UserInfo[]>): UserInfo[] => {
-				return response.data.map((user: UserInfo): UserInfo => {
-					/// Convert email to unicode
-					user.email = punycode.toUnicode(user.email);
-					return user;
-				});
-			});
+	public async list(): Promise<UserInfo[]> {
+		const response: AxiosResponse<UserInfo[]> =
+			await this.getClient().get('/users');
+		return response.data.map((user: UserInfo): UserInfo => {
+			/// Convert email to unicode
+			user.email = punycode.toUnicode(user.email);
+			return user;
+		});
 	}
 
 	/**
 	 * Blocks the user
-	 * @param id ID of user to block
-	 * @return Empty promise
+	 * @param {number} id ID of user to block
 	 */
-	public block(id: number): Promise<void> {
-		return this.getClient().post(`users/${id}/block`);
+	public async block(id: number): Promise<void> {
+		await this.getClient().post(`/users/${id}/block`);
 	}
 
 	/**
 	 * Unblocks the user
-	 * @param id ID of user to unblock
-	 * @return Empty promise
+	 * @param {number} id ID of user to unblock
 	 */
-	public unblock(id: number): Promise<void> {
-		return this.getClient().post(`users/${id}/unblock`);
+	public async unblock(id: number): Promise<void> {
+		await this.getClient().post(`/users/${id}/unblock`);
 	}
 
 	/**
 	 * Resends the invitation or verification email
-	 * @param id ID of user to resend email
-	 * @return Empty promise
+	 * @param {number} id ID of user to resend email
 	 */
-	public resend(id: number): Promise<void> {
-		return this.getClient().post(`users/${id}/resend`, {
+	public async resend(id: number): Promise<void> {
+		await this.getClient().post(`/users/${id}/resend`, {
 			baseUrl: BaseUrlHelper.get(),
 		});
 	}
 
 	/**
 	 * Serializes user identity
-	 * @param user User entity to serialize
-	 * @return Serialized user entity
+	 * @param {UserModify} user User entity to serialize
+	 * @return {UserModify} Serialized user entity
 	 */
 	private serializeUser(user: UserModify): UserModify {
 		/// Convert email to punycode

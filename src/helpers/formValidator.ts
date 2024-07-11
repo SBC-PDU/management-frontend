@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,32 +23,38 @@ export default class FormValidator {
 
 	/**
 	 * Checks if a required field is filled
-	 * @param value Value to check
-	 * @param errorMessage Error message to return if the value is not valid
-	 * @return True if the value is valid, error message otherwise
+	 * @template {string} T Error message type
+	 * @param {unknown} value Value to check
+	 * @param {T} errorMessage Error message to return if the value is not valid
+	 * @return {boolean | T} True if the value is valid, error message otherwise
 	 */
-	public static isRequired(value: unknown, errorMessage: string): boolean | string {
-		return !!value || errorMessage;
+	public static isRequired<T extends string>(value: unknown, errorMessage: T): boolean | T {
+		if (value === null || value === undefined || (Array.isArray(value) && value.length === 0) || value === false) {
+			return errorMessage;
+		}
+		return String(value).trim().length > 0 || errorMessage;
 	}
 
 	/**
 	 * Checks if a field is a valid e-mail address
-	 * @param value Value to check
-	 * @param errorMessage Error message to return if the value is not valid
-	 * @return True if the value is valid, error message otherwise
+	 * @template {string} T Error message type
+	 * @param {string} value Value to check
+	 * @param {T} errorMessage Error message to return if the value is not valid
+	 * @return {boolean | T} True if the value is valid, error message otherwise
 	 */
-	public static isEmail(value: string, errorMessage: string): boolean | string {
+	public static isEmail<T extends string>(value: string, errorMessage: T): boolean | T {
 		const validator: z.ZodString = z.string().email();
 		return validator.safeParse(punycode.toASCII(value)).success || errorMessage;
 	}
 
 	/**
 	 * Checks if a field is a valid TOTP code
-	 * @param value Value to check
-	 * @param errorMessage Error message to return if the value is not valid
-	 * @return True if the value is valid, error message otherwise
+	 * @template {string} T Error message type
+	 * @param {string} value Value to check
+	 * @param {T} errorMessage Error message to return if the value is not valid
+	 * @return {boolean | T} True if the value is valid, error message otherwise
 	 */
-	public static isTotpCode(value: string, errorMessage: string): boolean | string {
+	public static isTotpCode<T extends string>(value: string, errorMessage: T): boolean | T {
 		const validator: z.ZodString = z.string().regex(/^\d{6}$/);
 		return validator.safeParse(value).success || errorMessage;
 	}

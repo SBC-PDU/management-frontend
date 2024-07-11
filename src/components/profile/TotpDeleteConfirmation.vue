@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ limitations under the License.
 					v-model='formData.password'
 					:label='$t("core.user.fields.password")'
 					:rules='[
-						(v: any) => FormValidator.isRequired(v, $t("core.user.messages.emptyPassword")),
+						(v: unknown) => FormValidator.isRequired(v, $t("core.user.messages.emptyPassword")),
 					]'
 					required
 					:prepend-inner-icon='mdiKey'
@@ -104,7 +104,7 @@ const emit = defineEmits(['delete']);
 const componentProps = defineProps<Props>();
 const dialog = ref<boolean>(false);
 const modalWidth = ModalWindowHelper.getWidth();
-const form: Ref<typeof VForm | null> = ref(null);
+const form: Ref<VForm | null> = ref(null);
 const formData = ref<UserTotpRemove>({
 	code: '',
 	password: '',

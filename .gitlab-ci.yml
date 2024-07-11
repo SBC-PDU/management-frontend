@@ -1,4 +1,4 @@
-# Copyright 2022-2023 Roman Ondráček
+# Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,19 +50,16 @@ eslint:
     script:
         - pnpm run lint:js
     stage: coding-style
-    needs: [build-docker-testing]
 
 vue-i18n:
     script:
         - pnpm run lint:i18n
     stage: coding-style
-    needs: [build-docker-testing]
 
 stylelint:
     script:
         - pnpm run lint:css
     stage: coding-style
-    needs: [build-docker-testing]
 
 build:
     script:

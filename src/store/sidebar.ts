@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ export const useSidebarStore = defineStore('sidebar', {
 	actions: {
 		/**
 		 * Sets sidebar visibility
-		 * @param visible Sidebar visibility
+		 * @param {boolean} visible Sidebar visibility
 		 */
 		setVisibility(visible: boolean): void {
 			this.visible = visible;
@@ -57,14 +57,14 @@ export const useSidebarStore = defineStore('sidebar', {
 	getters: {
 		/**
 		 * Is the sidebar minimized?
-		 * @return True if the sidebar is minimized, false otherwise
+		 * @return {boolean} True if the sidebar is minimized, false otherwise
 		 */
 		isMinimized(): boolean {
 			return this.minimized;
 		},
 		/**
 		 * Is the sidebar visible?
-		 * @return True if the sidebar is visible, false otherwise
+		 * @return {boolean} True if the sidebar is visible, false otherwise
 		 */
 		isVisible(): boolean {
 			return this.visible;

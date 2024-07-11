@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 import { defineStore } from 'pinia';
 import { preferredLocale } from 'preferred-locale';
 
-import LocaleHelper from '@/helpers/localeHelper';
 import i18n from '@/plugins/i18n';
+import { UserLanguage } from '@/types/user';
 
 /**
  * Locale store state
  */
 interface LocaleState {
-	locale: string;
+	locale: UserLanguage;
 }
 
 /**
@@ -31,52 +31,62 @@ interface LocaleState {
  */
 interface Locale {
 	/// Locale code
-	code: string;
+	code: UserLanguage;
 	/// Locale Unicode flag
 	flag: string;
 }
 
 export const useLocaleStore = defineStore('locale', {
 	state: (): LocaleState => ({
-		locale: preferredLocale('en', ['cs', 'en'], { languageOnly: true }),
+		locale: preferredLocale(UserLanguage.English, [
+			UserLanguage.Czech,
+			UserLanguage.English,
+		], { languageOnly: true }) as UserLanguage,
 	}),
 	actions: {
 		/**
 		 * Sets a new locale
-		 * @param locale Locale to set
+		 * @param {UserLanguage} locale Locale to set
 		 */
-		setLocale(locale: string): void {
+		setLocale(locale: UserLanguage): void {
 			// @ts-ignore
-			i18n.global.locale.value = locale;
+			i18n.global.locale.value = locale.toString();
 			this.locale = locale;
 		},
 	},
 	getters: {
 		/**
 		 * Returns available locales
-		 * @return Available locales
+		 * @return {Locale[]} Available locales
 		 */
 		getAvailableLocales(): Locale[] {
 			return [
-				{ code: 'cs', flag: '🇨🇿' },
-				{ code: 'en', flag: '🇬🇧' },
+				{ code: UserLanguage.Czech, flag: '🇨🇿' },
+				{ code: UserLanguage.English, flag: '🇬🇧' },
 			];
 		},
 		/**
 		 * Returns current locale code
-		 * @param state Current state
-		 * @return Current locale code
+		 * @param {LocaleState} state Current state
+		 * @return {UserLanguage} Current locale code
 		 */
-		getLocale(state: LocaleState): string {
+		getLocale(state: LocaleState): UserLanguage {
 			return state.locale;
 		},
 		/**
 		 * Returns current locale flag
-		 * @param state Current state
-		 * @return Current locale flag
+		 * @param {LocaleState} state Current state
+		 * @return {string} Current locale flag
 		 */
 		getLocaleFlag(state: LocaleState): string {
-			return LocaleHelper.getFlag(state.locale);
+			switch (state.locale) {
+				case UserLanguage.Czech:
+					return '🇨🇿';
+				case UserLanguage.English:
+					return '🇬🇧';
+				default:
+					return '🏴‍☠️';
+			}
 		},
 	},
 	persist: true,

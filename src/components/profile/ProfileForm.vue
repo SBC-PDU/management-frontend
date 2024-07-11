@@ -1,5 +1,5 @@
 <!--
-Copyright 2022-2023 Roman Ondráček
+Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ limitations under the License.
 				v-model='user.name'
 				:label='$t("core.user.fields.name")'
 				:rules='[
-					v => FormValidator.isRequired(v, $t("core.user.messages.emptyName")),
+					(v: unknown) => FormValidator.isRequired(v, $t("core.user.messages.emptyName")),
 				]'
 				required
 				:prepend-inner-icon='mdiAccount'
@@ -39,8 +39,8 @@ limitations under the License.
 				v-model='user.email'
 				:label='$t("core.user.fields.email")'
 				:rules='[
-					v => FormValidator.isRequired(v, $t("core.user.messages.emptyEmail")),
-					v => FormValidator.isEmail(v, $t("core.user.messages.invalidEmail")),
+					(v: unknown) => FormValidator.isRequired(v, $t("core.user.messages.emptyEmail")),
+					(v: string) => FormValidator.isEmail(v, $t("core.user.messages.invalidEmail")),
 				]'
 				required
 				:prepend-inner-icon='mdiEmail'
@@ -115,7 +115,7 @@ const loadingSpinner = useLoadingSpinnerStore();
 const localeStore = useLocaleStore();
 const userStore = useUserStore();
 const service = new AccountService();
-const form: Ref<typeof VForm | null> = ref(null);
+const form: Ref<VForm | null> = ref(null);
 const state: Ref<PageState> = ref<PageState>(PageState.Loading);
 const user: Ref<AccountModify> = ref<AccountModify>({
 	name: '',

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Roman Ondráček
+ * Copyright 2022-2024 Roman Ondráček <mail@romanondracek.cz>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ export default class BaseUrlHelper {
 
 	/**
 	 * Returns frontend base URL
-	 * @return Frontend base URL
+	 * @return {string} Frontend base URL
 	 */
 	public static get(): string {
 		return `${window.location.protocol}//${window.location.host}${import.meta.env.BASE_URL}`;
